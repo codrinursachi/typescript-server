@@ -9,7 +9,13 @@ export function handerValidateChirp(req: Request, res: Response) {
         }));
         return;
     }
+    const clean = chirp.body.split(" ").map((word: string) => {
+        if (["kerfuffle", "sharbert", "fornax"].includes(word.toLowerCase())) {
+            return "****";
+        }
+        return word;
+    }).join(" ");
     res.status(200).send(JSON.stringify({
-        "valid": true
+        "cleanedBody": clean
     }));
 }
