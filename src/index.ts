@@ -4,11 +4,14 @@ import { middlewareLogResponses } from "./middleware-log-responses.js";
 import { middlewareMetricsInc } from "./middleware-metrics-inc.js";
 import { handlerRetrieveCounter } from "./handler-retrieve-counter.js";
 import { handlerResetCounter } from "./handler-reset-counter.js";
+import { handerValidateChirp } from "./handler_validate_chirp.js";
 
 const app = express();
 const PORT = 8080;
 app.use(middlewareLogResponses);
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
+
+app.post("/api/validate_chirp", handerValidateChirp);
 
 app.get("/api/healthz", handlerReadiness);
 app.get("/admin/metrics", handlerRetrieveCounter);
