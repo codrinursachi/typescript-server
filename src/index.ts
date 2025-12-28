@@ -11,7 +11,7 @@ const PORT = 8080;
 app.use(middlewareLogResponses);
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
-app.post("/api/validate_chirp", handerValidateChirp);
+app.post("/api/validate_chirp", express.json(), handerValidateChirp);
 
 app.get("/api/healthz", handlerReadiness);
 app.get("/admin/metrics", handlerRetrieveCounter);
