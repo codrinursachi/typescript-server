@@ -8,6 +8,7 @@ import { middlewareErrorHandling } from "./middleware-error-handling.js";
 import { handlerUserCreation } from "./handler-user-creation.js";
 import { handlerCreateChirp } from "./handler-create-chirp.js";
 import { handlerRetrieveChirps } from "./handler-retrieve-chirps.js";
+import { handlerRetrieveChirp } from "./handler-retrieve-chirp.js";
 
 const app = express();
 const PORT = 8080;
@@ -18,6 +19,7 @@ app.post("/api/users", express.json(), handlerUserCreation);
 app.post("/api/chirps", express.json(), handlerCreateChirp, middlewareErrorHandling);
 
 app.get("/api/chirps", handlerRetrieveChirps);
+app.get("/api/chirps/:id", handlerRetrieveChirp);
 app.get("/api/healthz", handlerReadiness);
 app.get("/admin/metrics", handlerRetrieveCounter);
 app.post("/admin/reset", handlerResetCounter);
