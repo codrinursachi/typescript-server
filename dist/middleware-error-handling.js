@@ -3,7 +3,7 @@ export function middlewareErrorHandling(err, req, res, next) {
     console.log(err.message);
     const status = getStatusCode(err);
     if (status === 500) {
-        console.error("500 - Internal Server Errors");
+        console.log("500 - Internal Server Errors");
         return;
     }
     res.status(status).send({
