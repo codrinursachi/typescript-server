@@ -1,7 +1,15 @@
 import { createChirp } from './db/queries/chirps.js';
 import { BadRequestError } from './error-classes.js';
+import { getBearerToken, validateJWT } from './auth.js';
+import { config } from './config.js';
 export async function handlerCreateChirp(req, res) {
     const chirp = req.body;
+    const jwt = getBearerToken(req);
+    const isValidJWT = validateJWT(jwt, config.secret);
+    if (!isValidJWT || typeof isValidJWT !== "string") {
+        throw new BadRequestError("Invalid JWT token");
+    }
+    chirp.userID = isValidJWT;
     if (chirp.body.length > 140) {
         throw new BadRequestError("Chirp is too long. Max length is 140");
     }
