@@ -36,45 +36,34 @@ export async function handlerUsersCreate(req: Request, res: Response) {
         email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        isChirpyRed: user.isChirpyRed,
     } satisfies UserResponse);
 }
 
-export async function handlerUpdateUser(req: Request, res: Response) {
-    let userId: string;
-    try {
-        const token = getBearerToken(req);
-        userId = validateJWT(token, config.jwt.secret);
-    } catch (e) {
-        res.status(401).json({ error: "Unauthorized" });;
-        return;
-    }
-
+export async function handlerUsersUpdate(req: Request, res: Response) {
     type parameters = {
-        email?: string;
-        password?: string;
+        password: string;
+        email: string;
     };
+
+    const token = getBearerToken(req);
+    const subject = validateJWT(token, config.jwt.secret);
+
     const params: parameters = req.body;
 
-    const updateData: Partial<NewUser> = {};
-
-    if (params.email) {
-        updateData.email = params.email;
+    if (!params.password || !params.email) {
+        throw new BadRequestError("Missing required fields");
     }
 
-    if (params.password) {
-        updateData.hashedPassword = await hashPassword(params.password);
-    }
+    const hashedPassword = await hashPassword(params.password);
 
-    const updatedUser = await updateUser(userId, updateData);
-
-    if (!updatedUser) {
-        throw new Error("Could not update user");
-    }
+    const user = await updateUser(subject, params.email, hashedPassword);
 
     respondWithJSON(res, 200, {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        createdAt: updatedUser.createdAt,
-        updatedAt: updatedUser.updatedAt,
+        id: user.id,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        email: user.email,
+        isChirpyRed: user.isChirpyRed,
     } satisfies UserResponse);
 }

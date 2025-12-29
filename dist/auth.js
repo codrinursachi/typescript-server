@@ -46,7 +46,7 @@ export function validateJWT(tokenString, secret) {
 export function getBearerToken(req) {
     const authHeader = req.get("Authorization");
     if (!authHeader) {
-        throw new BadRequestError("Malformed authorization header");
+        throw new UserNotAuthenticatedError("Malformed authorization header");
     }
     return extractBearerToken(authHeader);
 }
@@ -59,4 +59,18 @@ export function extractBearerToken(header) {
 }
 export function makeRefreshToken() {
     return crypto.randomBytes(32).toString("hex");
+}
+export function getAPIKey(req) {
+    const authHeader = req.get("Authorization");
+    if (!authHeader) {
+        throw new UserNotAuthenticatedError("Malformed authorization header");
+    }
+    return extractApiKey(authHeader);
+}
+export function extractApiKey(header) {
+    const splitAuth = header.split(" ");
+    if (splitAuth.length < 2 || splitAuth[0] !== "ApiKey") {
+        throw new BadRequestError("Malformed authorization header");
+    }
+    return splitAuth[1];
 }

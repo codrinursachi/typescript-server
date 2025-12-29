@@ -1,11 +1,20 @@
 import type { Request, Response } from "express";
 
 import { respondWithJSON } from "./json.js";
-import { createChirp, deleteChirp, getChirp, getChirps } from "../db/queries/chirps.js";
-import { BadRequestError, NotFoundError } from "./errors.js";
+import {
+    createChirp,
+    deleteChirp,
+    getChirp,
+    getChirps,
+} from "../db/queries/chirps.js";
+import {
+    BadRequestError,
+    NotFoundError,
+    UserForbiddenError,
+} from "./errors.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
-import { get } from "node:http";
+import { NewChirp } from "src/db/schema.js";
 
 export async function handlerChirpsCreate(req: Request, res: Response) {
     type parameters = {
@@ -50,9 +59,31 @@ function getCleanedBody(body: string, badWords: string[]) {
     return cleaned;
 }
 
-export async function handlerChirpsRetrieve(_: Request, res: Response) {
+export async function handlerChirpsRetrieve(req: Request, res: Response) {
     const chirps = await getChirps();
-    respondWithJSON(res, 200, chirps);
+
+    let authorId = "";
+    let authorIdQuery = req.query.authorId;
+    if (typeof authorIdQuery === "string") {
+        authorId = authorIdQuery;
+    }
+
+    let sortDirection = "asc";
+    let sortDirectionParam = req.query.sort;
+    if (sortDirectionParam === "desc") {
+        sortDirection = "desc";
+    }
+
+    const filteredChirps = chirps.filter(
+        (chirp) => chirp.userId === authorId || authorId === "",
+    );
+    filteredChirps.sort((a, b) =>
+        sortDirection === "asc"
+            ? a.createdAt.getTime() - b.createdAt.getTime()
+            : b.createdAt.getTime() - a.createdAt.getTime(),
+    );
+
+    respondWithJSON(res, 200, filteredChirps);
 }
 
 export async function handlerChirpsGet(req: Request, res: Response) {
@@ -69,32 +100,22 @@ export async function handlerChirpsGet(req: Request, res: Response) {
 export async function handlerChirpsDelete(req: Request, res: Response) {
     const { chirpId } = req.params;
 
-    let userId: string;
-    try {
-        let token: string;
-        try {
-            token = getBearerToken(req);
-        } catch {
-            res.status(401).json({ error: "Unauthorized" });
-            return;
-        }
-        userId = validateJWT(token, config.jwt.secret);
-    } catch (e) {
-        res.status(403).json({ error: "Unauthorized" });
-        return;
-    }
+    const token = getBearerToken(req);
+    const userId = validateJWT(token, config.jwt.secret);
 
     const chirp = await getChirp(chirpId);
     if (!chirp) {
-        res.status(404).json({ error: "Chirp not found" });
-        return;
+        throw new NotFoundError(`Chirp with chirpId: ${chirpId} not found`);
     }
+
     if (chirp.userId !== userId) {
-        res.status(403).json({ error: "Forbidden" });
-        return;
+        throw new UserForbiddenError("You can't delete this chirp");
     }
 
-    await deleteChirp(chirpId);
+    const deleted = await deleteChirp(chirpId);
+    if (!deleted) {
+        throw new Error(`Failed to delete chirp with chirpId: ${chirpId}`);
+    }
 
-    respondWithJSON(res, 204, null);
+    res.status(204).send();
 }

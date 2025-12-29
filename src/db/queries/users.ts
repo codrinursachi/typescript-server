@@ -20,11 +20,31 @@ export async function getUserByEmail(email: string) {
     return result;
 }
 
-export async function updateUser(userId: string, updateData: Partial<NewUser>) {
+export async function updateUser(
+    id: string,
+    email: string,
+    hashedPassword: string,
+) {
     const [result] = await db
         .update(users)
-        .set(updateData)
-        .where(eq(users.id, userId))
+        .set({
+            email: email,
+            hashedPassword: hashedPassword,
+        })
+        .where(eq(users.id, id))
         .returning();
+
+    return result;
+}
+
+export async function upgradeChirpyRed(id: string) {
+    const [result] = await db
+        .update(users)
+        .set({
+            isChirpyRed: true,
+        })
+        .where(eq(users.id, id))
+        .returning();
+
     return result;
 }

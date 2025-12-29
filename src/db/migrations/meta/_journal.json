@@ -29,6 +29,13 @@
       "when": 1767032774645,
       "tag": "0003_cuddly_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1767035495174,
+      "tag": "0004_sudden_maginty",
+      "breakpoints": true
     }
   ]
 }
