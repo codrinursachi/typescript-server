@@ -7,6 +7,7 @@ export const users = pgTable("users", {
         .defaultNow()
         .$onUpdate(() => new Date()),
     email: varchar("email", { length: 256 }).unique().notNull(),
+    hashedPassword: varchar("hashed_password").notNull().default("unset"),
 });
 export const chirps = pgTable("chirps", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -16,7 +17,7 @@ export const chirps = pgTable("chirps", {
         .defaultNow()
         .$onUpdate(() => new Date()),
     body: varchar("body", { length: 140 }).notNull(),
-    userId: uuid("userId")
+    userId: uuid("user_id")
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),
 });

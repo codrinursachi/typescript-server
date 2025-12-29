@@ -15,6 +15,13 @@
       "when": 1766951852073,
       "tag": "0001_flaky_mikhail_rasputin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767029455830,
+      "tag": "0002_wise_the_fallen",
+      "breakpoints": true
     }
   ]
 }
